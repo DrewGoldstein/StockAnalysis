@@ -1,0 +1,89 @@
+---
+title: "Stock Analysis"
+output: html_document
+date: "2024-10-22"
+---
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(tidyquant)
+library(TTR)
+library(gridExtra)
+```
+
+
+```{r functions, echo = FALSE}
+
+calculate_func <- function (self, date_from, date_to){
+  # Get AAPL stock data from Yahoo Finance
+  aapl_data <- tq_get(self, from = "2022-10-09", to = "2024-10-09")
+  # change to get data from long before to show a complete 200 day SMA and getting error messages
+
+  # View the first few rows
+  head(aapl_data)
+
+
+  # Calculate the 20-day Simple Moving Average (SMA)
+  aapl_data$SMA20 <- SMA(aapl_data$close, n = 20)
+  # 50 day
+  aapl_data$SMA50 <- SMA(aapl_data$close, n = 50)
+  # 200 day
+  aapl_data$SMA200 <- SMA(aapl_data$close, n = 200)
+
+  # Calculate the 14-day Relative Strength Index (RSI)
+  aapl_data$RSI14 <- RSI(aapl_data$close, n = 14)
+
+  # View the updated data with SMA and RSI columns
+  head(aapl_data)
+
+  # Plot stock price and 20-day SMA
+  price_plot <- ggplot(aapl_data, aes(x = date)) +
+    geom_line(aes(y = close, color = "Closing Price")) +
+    geom_line(aes(y = SMA20, color = "20-Day SMA")) +
+    geom_line(aes(y = SMA50, color = "50-Day SMA")) +
+    geom_line(aes(y = SMA200, color = "200-Day SMA")) +
+    labs(title = self, y = "Price (USD)", x = "Date") +
+    scale_color_manual("", values = c("Closing Price" = "blue", "20-Day SMA" = "red", "50-Day SMA" = "green", "200-Day" = "purple")) +
+    theme_minimal()
+
+  price_plot <- price_plot + xlim(as.Date(c("2022-09-01","2024-10-20")))
+
+
+
+  # Plot RSI
+  rsi_plot <- ggplot(aapl_data, aes(x = date, y = RSI14)) +
+    geom_line(color = "purple") +
+    labs(title = self, y = "RSI", x = "Date") +
+    geom_hline(yintercept = 70, linetype = "dashed", color = "red") +  # Overbought level
+    geom_hline(yintercept = 30, linetype = "dashed", color = "green") +  # Oversold level
+    theme_minimal()
+
+  # Display the plots
+
+  grid.arrange(price_plot, rsi_plot, ncol = 1)
+}
+
+calculate_func("IBM")
+calculate_func("AAPL")
+
+
+
+#assign variables
+symbol <- "AAPL"
+date_from <- "2023-10-09"
+date_to <- "2024-10-09" 
+
+# run function
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
