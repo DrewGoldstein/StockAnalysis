@@ -17,6 +17,7 @@ library(ggplot2)
 library(tidyquant)
 library(TTR)
 library(gridExtra)
+library(quantmod)
 ```
 
 
@@ -24,7 +25,7 @@ library(gridExtra)
 
 calculate_func <- function (self, date_from, date_to){
   # Get AAPL stock data from Yahoo Finance
-  aapl_data <- tq_get(self, from = "2022-10-09", to = "2024-10-09")
+  aapl_data <- tq_get(self, from = as.character(date_from), to = as.character(date_to))
   # change to get data from long before to show a complete 200 day SMA and getting error messages
 
   # View the first few rows
@@ -54,7 +55,7 @@ calculate_func <- function (self, date_from, date_to){
     scale_color_manual("", values = c("Closing Price" = "blue", "20-Day SMA" = "red", "50-Day SMA" = "green", "200-Day" = "purple")) +
     theme_minimal()
 
-  price_plot <- price_plot + xlim(as.Date(c("2022-09-01","2024-10-20")))
+  price_plot <- price_plot + xlim(as.Date(c(date_from,date_to)))
 
 
 
@@ -71,17 +72,50 @@ calculate_func <- function (self, date_from, date_to){
   grid.arrange(price_plot, rsi_plot, ncol = 1)
 }
 
-calculate_func("IBM")
-calculate_func("AAPL")
+
+chart1 <- function(symbol, date_from_input) {
+  date_from <- as.character(date_from_input)
+  date_to <- as.character(Sys.Date())
+  
+  stock_data <- getSymbols(symbol, src = "yahoo", from = date_from, to = date_to, auto.assign = FALSE)
+
+  # View the structure of the stock data
+  view(stock_data)
+
+  # Plot stock data with technical indicators
+  chartSeries(stock_data, TA = "addSMA(20); addSMA(50); addEMA(); addRSI(14)")
+
+}
+
+date_from = "2022-10-20"
+date_to = as.character(Sys.Date())
 
 
+chart1("AAPL", "2023-01-01")
+calculate_func("AAPL", date_from, date_to)
 
-#assign variables
-symbol <- "AAPL"
-date_from <- "2023-10-09"
-date_to <- "2024-10-09" 
+chart1("IBM", "2023-01-01")
+calculate_func("IBM", date_from, date_to)
 
-# run function
+chart1("MSFT", "2023-01-01")
+calculate_func("MSFT", date_from, date_to)
+
+chart1("NVDA", "2023-01-01")
+calculate_func("NVDA", date_from, date_to)
+
+chart1("GOLD", "2023-01-01")
+calculate_func("GOLD", date_from, date_to)
+
+chart1("META", "2023-01-01")
+calculate_func("META", date_from, date_to)
+
+
+calculate_func("ADC", date_from, date_to)
+calculate_func("VIG", date_from, date_to)
+calculate_func("MAIN", date_from, date_to)
+calculate_func("SRE", date_from, date_to)
+calculate_func("TSM", date_from, date_to)
+calculate_func("INTC", date_from, date_to)
 
 
 ```
